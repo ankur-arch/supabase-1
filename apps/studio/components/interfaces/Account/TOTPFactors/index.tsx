@@ -1,6 +1,7 @@
 import { useFlag } from 'common'
 import dayjs from 'dayjs'
 import { PlusIcon, RectangleEllipsisIcon } from 'lucide-react'
+import { parseAsString, useQueryState } from 'nuqs'
 import { useState } from 'react'
 import { Button, Card, CardContent, cn } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
@@ -29,7 +30,10 @@ import { DATETIME_FORMAT } from '@/lib/constants'
 
 export const TOTPFactors = () => {
   const [isAddNewFactorOpen, setIsAddNewFactorOpen] = useState(false)
-  const [factorToBeDeleted, setFactorToBeDeleted] = useState<string | null>(null)
+  const [factorToBeDeleted, setFactorToBeDeleted] = useQueryState(
+    'removeAuthenticator',
+    parseAsString
+  )
   const { data, isPending: isLoading, isError, isSuccess, error } = useMfaListFactorsQuery()
   const enableAuthRecoveryCodes = useFlag('enableAuthRecoveryCodes')
 
@@ -129,7 +133,7 @@ export const TOTPFactors = () => {
                           content: {
                             side: 'top',
                             text: disableDeleteFactor
-                              ? 'Check recovery code status'
+                              ? 'Check recovery code status before removing an authenticator'
                               : 'Remove authenticator',
                           },
                         }}
@@ -205,8 +209,8 @@ export const TOTPFactors = () => {
       />
 
       <DeleteFactorModal
-        visible={factorToBeDeleted !== null}
-        factorId={factorToBeDeleted}
+        visible={totpFactors.some((factor) => factor.id === factorToBeDeleted)}
+        factorId={totpFactors.find((factor) => factor.id === factorToBeDeleted)?.id ?? null}
         canRemove={!disableDeleteFactor}
         lastFactorToBeDeleted={totpFactors.length === 1}
         onClose={() => setFactorToBeDeleted(null)}

@@ -27,7 +27,7 @@ const availableCodes: AuthMFARecoveryCodesStatusResponse = {
   error: null,
 }
 
-const renderFactors = () => {
+const renderFactors = (searchParams = '') => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
@@ -41,7 +41,7 @@ const renderFactors = () => {
     >
       <TOTPFactors />
     </FeatureFlagContext.Provider>,
-    { queryClient }
+    { queryClient, nuqs: { searchParams } }
   )
   return queryClient
 }
@@ -83,6 +83,14 @@ describe('authenticator removal recovery-status guard', () => {
     expect(screen.queryByText('Failed to load recovery codes')).not.toBeInTheDocument()
     fireEvent.click(remove)
     expect(await screen.findByRole('dialog', { name: 'Remove authenticator' })).toBeInTheDocument()
+  })
+
+  test('a recovery-code return opens confirmation for the selected verified authenticator', async () => {
+    vi.spyOn(auth.mfa.recoveryCodes, 'getStatus').mockResolvedValue(availableCodes)
+    const remove = vi.spyOn(auth.mfa, 'unenroll')
+    renderFactors('?removeAuthenticator=authenticator-a')
+    expect(await screen.findByRole('dialog', { name: 'Remove authenticator' })).toBeInTheDocument()
+    expect(remove).not.toHaveBeenCalled()
   })
 
   test('keeps removal unavailable while recovery-code status is loading', async () => {

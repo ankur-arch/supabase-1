@@ -27,7 +27,7 @@ export const DeleteFactorModal = (props: DeleteFactorModalProps) => {
     <IdentityVerification
       factorToAvoidId={props.factorId ?? undefined}
       canUseRecoveryCodes={props.canUseRecoveryCodes}
-      returnTo="/account/security"
+      returnTo={`/account/security?removeAuthenticator=${encodeURIComponent(props.factorId ?? '')}`}
       onCancel={props.onClose}
     >
       {({ isVerified, requireVerification }) => (
