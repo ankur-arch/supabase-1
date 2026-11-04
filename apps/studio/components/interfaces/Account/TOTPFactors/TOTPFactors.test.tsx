@@ -101,7 +101,7 @@ describe('account security MFA and recovery sections', () => {
     ).toBeInTheDocument()
   })
 
-  it('shows exhausted codes and keeps removal in the options menu', async () => {
+  it('shows exhausted codes with regeneration and no standalone removal', async () => {
     mock.getStatus.mockResolvedValue({ data: { remaining: 0, total: 10 }, error: null })
     renderSection({
       id: 'recovery-codes-exhausted',
@@ -116,8 +116,10 @@ describe('account security MFA and recovery sections', () => {
     ).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Regenerate' })).toHaveLength(1)
     expect(screen.queryByText('Remove')).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Recovery code options' }))
-    expect(await screen.findByRole('menuitem', { name: 'Remove codes' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Recovery code options' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Remove codes')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Regenerate' }))
+    expect(await screen.findByText('Regenerate my recovery codes')).toBeInTheDocument()
   })
 
   it('shows available codes without inventing a backup recommendation', async () => {
